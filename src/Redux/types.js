@@ -1,0 +1,3 @@
+const LOGS = 'LOGS'
+const DELETELOGS = 'DELETELOGS'
+export {LOGS,DELETELOGS}

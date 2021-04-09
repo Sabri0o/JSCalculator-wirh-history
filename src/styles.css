@@ -1,0 +1,56 @@
+/* body {
+  background-color:  rgba(99, 199, 137, 0.63);
+} */
+
+.buttonsContainer {
+display:grid;
+grid-template-columns: 1fr 1fr 1fr 1fr;
+grid-template-rows:70px 70px 70px 70px 70px;
+
+}
+
+.buttons  {
+  border-radius:6px; 
+  height:100%;
+  width:100%;
+  font-size: 20px;
+  font-weight: 400
+}
+
+.numbers  {
+  background:  rgba(235, 238, 237, 0.137);
+}
+
+.result  {
+  background:  rgba(62, 81, 88, 0.425);
+  font-weight: 400;
+  font-size: 30px;
+}
+
+/* .op {
+  font-weight: 400;
+} */
+
+.negate {
+  font-weight: 500;
+}
+
+.buttons:hover {
+  background: #32aee7;
+  color: white;
+}
+
+
+#upperDisplay{
+  width:100%;
+  height:25px;
+  text-align: right
+}
+
+#display{
+  width:100%;
+  height:50px;
+  text-align: right;
+  font-size: 2em;
+  font-weight: 500
+}
