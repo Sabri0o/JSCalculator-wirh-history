@@ -13,7 +13,7 @@ class Calculator extends React.Component {
       sign: "",
       equation: "",
       decimal: true,
-      result: true
+      result: true,
     };
     this.handleNumbers = this.handleNumbers.bind(this);
     this.clearDisplay = this.clearDisplay.bind(this);
@@ -22,17 +22,151 @@ class Calculator extends React.Component {
     this.handleNegate = this.handleNegate.bind(this);
     this.clearOperand = this.clearOperand.bind(this);
     this.ommitLastDigit = this.ommitLastDigit.bind(this);
+    this.handleKeyPress = this.handleKeyPress.bind(this);
+  }
+
+  componentDidMount() {
+    window.addEventListener("keydown", this.handleKeyPress);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.handleKeyPress);
+  }
+
+  handleKeyPress(e) {
+    if (Number(e.key) || e.key === "0") {
+      if (this.state.sign === "=" && this.state.result) {
+        this.setState({
+          input: e.key,
+          operator: false,
+          sign: "",
+          equation: "",
+          decimal: true,
+          result: true,
+        });
+      } else if (
+        this.state.input !== "0" &&
+        this.state.operator === false &&
+        this.state.result
+      ) {
+        this.setState((state) => ({
+          input: state.input + e.key,
+        }));
+      } else if (this.state.input === "0" || !this.state.result) {
+        this.setState((state) => ({
+          input: e.key,
+          operator: false,
+          result: true,
+        }));
+      } else if (this.state.input !== "0" && this.state.operator === true) {
+        this.setState((state) => ({
+          input: e.key,
+          operator: false,
+          result: true,
+        }));
+      }
+    } else if (["Enter", "+", "-", "/", "*"].includes(e.key)) {
+      let key = e.key === "Enter" ? "=" : e.key;
+      if (!this.state.operator && this.state.result) {
+        const exp = this.state.equation + this.state.input + key;
+
+        if (key === "=") {
+          this.props.NewLog([exp, String(eval(exp.slice(0, exp.length - 1)))]);
+        }
+        this.setState((state) => ({
+          sign: key,
+          equation: exp.slice(0, exp.length - 1) + key,
+          operator: true,
+          decimal: true,
+          input: String(eval(exp.slice(0, exp.length - 1))),
+        }));
+      } else {
+        if (key === "=") {
+          this.setState((state) => ({
+            sign: "=",
+            operator: false,
+            result: false,
+            decimal: false,
+            input: String(
+              eval(this.state.equation.slice(0, this.state.equation.length - 1))
+            ),
+          }));
+        } else if (
+          key === "-" &&
+          this.state.sign.length < 2 &&
+          this.state.sign !== "="
+        ) {
+          const newSign = this.state.sign + "-";
+          const newExp = this.state.equation + " " + "-";
+          this.setState((state) => ({
+            equation: newExp,
+            sign: newSign,
+          }));
+        } else {
+          const newSign = key;
+          const newExp = this.state.equation.slice(
+            0,
+            this.state.equation.length - this.state.sign.length
+          );
+          this.setState((state) => ({
+            equation: String(eval(newExp)) + newSign,
+            sign: newSign,
+          }));
+        }
+      }
+    } else if (e.key === ".") {
+      if (this.state.sign === "=") {
+        this.setState((state) => ({
+          input: "0.",
+          decimal: false,
+          equation: "",
+          operator: false,
+          sign: "",
+          result: true,
+        }));
+      } else {
+        if (this.state.input === "0") {
+          this.setState((state) => ({
+            input: "0.",
+            decimal: false,
+            operator: false,
+            sign: "",
+            result: true,
+          }));
+        } else if (!this.state.input.includes(".")) {
+          this.setState((state) => ({
+            input: state.input + ".",
+            decimal: false,
+          }));
+        }
+      }
+    } else if (e.key === "Backspace") {
+      if (
+        this.state.sign !== "=" &&
+        this.state.input !== this.state.equation &&
+        this.state.input !==
+          String(
+            eval(this.state.equation.slice(0, this.state.equation.length - 1))
+          )
+      ) {
+        const newInput = this.state.input.slice(0, this.state.input.length - 1);
+        this.setState({
+          input: newInput === "" ? "0" : newInput,
+          decimal: !newInput.includes("."),
+        });
+      }
+    }
   }
 
   handleNumbers(e) {
-    if (this.state.sign === " = " && this.state.result) {
+    if (this.state.sign === "=" && this.state.result) {
       this.setState({
         input: e.target.value,
         operator: false,
         sign: "",
         equation: "",
         decimal: true,
-        result: true
+        result: true,
       });
     } else if (
       this.state.input !== "0" &&
@@ -40,19 +174,19 @@ class Calculator extends React.Component {
       this.state.result
     ) {
       this.setState((state) => ({
-        input: state.input + e.target.value
+        input: state.input + e.target.value,
       }));
     } else if (this.state.input === "0" || !this.state.result) {
       this.setState((state) => ({
         input: e.target.value,
         operator: false,
-        result: true
+        result: true,
       }));
     } else if (this.state.input !== "0" && this.state.operator === true) {
       this.setState((state) => ({
         input: e.target.value,
         operator: false,
-        result: true
+        result: true,
       }));
     }
   }
@@ -60,39 +194,41 @@ class Calculator extends React.Component {
   handleOperation(e) {
     if (!this.state.operator && this.state.result) {
       const exp = this.state.equation + this.state.input + e.target.value;
-      if (e.target.value === " = ") {
-        this.props.NewLog([exp, String(eval(exp.slice(0, exp.length - 3)))]);
+      console.log(exp.slice(0, exp.length - 1));
+
+      if (e.target.value === "=") {
+        this.props.NewLog([exp, String(eval(exp.slice(0, exp.length - 1)))]);
       }
       this.setState((state) => ({
         sign: e.target.value,
-        equation: exp.slice(0, exp.length - 3) + e.target.value,
+        equation: exp.slice(0, exp.length - 1) + e.target.value,
         operator: true,
         decimal: true,
-        input: String(eval(exp.slice(0, exp.length - 3)))
+        input: String(eval(exp.slice(0, exp.length - 1))),
       }));
     } else {
-      if (e.target.value === " = ") {
+      if (e.target.value === "=") {
         this.setState((state) => ({
-          sign: " = ",
+          sign: "=",
           operator: false,
           result: false,
           decimal: false,
           input: String(
-            eval(this.state.equation.slice(0, this.state.equation.length - 3))
-          )
+            eval(this.state.equation.slice(0, this.state.equation.length - 1))
+          ),
         }));
       } else if (
-        e.target.value === " - " &&
-        this.state.sign.length < 4 &&
-        this.state.sign !== " = "
+        e.target.value === "-" &&
+        this.state.sign.length < 2 &&
+        this.state.sign !== "="
       ) {
-        const newSign = this.state.sign + " - ";
-        const newExp = this.state.equation + " - ";
+        const newSign = this.state.sign + "-";
+        const newExp = this.state.equation + " " + "-";
         this.setState((state) => ({
           equation: newExp,
-          sign: newSign
+          sign: newSign,
         }));
-      } else  {
+      } else {
         const newSign = e.target.value;
         const newExp = this.state.equation.slice(
           0,
@@ -100,7 +236,7 @@ class Calculator extends React.Component {
         );
         this.setState((state) => ({
           equation: String(eval(newExp)) + newSign,
-          sign: newSign
+          sign: newSign,
         }));
       }
     }
@@ -109,77 +245,54 @@ class Calculator extends React.Component {
   clearOperand() {
     this.setState((state) => ({
       input: "0",
-      equation: state.sign === " = " ? "" : state.equation,
-      operator: state.sign === " = " || state.equation !== "" ? false : true,
-      sign: state.sign === " = " ? "" : state.sign,
-      decimal: true
+      equation: state.sign === "=" ? "" : state.equation,
+      operator: state.sign === "=" || state.equation !== "" ? false : true,
+      sign: state.sign === "=" ? "" : state.sign,
+      decimal: true,
     }));
   }
 
   handleDecimal() {
-    if (this.state.sign === " = ") {
+    if (this.state.sign === "=") {
       this.setState((state) => ({
         input: "0.",
         decimal: false,
         equation: "",
         operator: false,
         sign: "",
-        result: true
+        result: true,
       }));
     } else {
       if (this.state.input === "0") {
         this.setState((state) => ({
           input: "0.",
           decimal: false,
-          // equation: "",
           operator: false,
           sign: "",
-          result: true
+          result: true,
         }));
       } else if (!this.state.input.includes(".")) {
         this.setState((state) => ({
           input: state.input + ".",
-          decimal: false
+          decimal: false,
         }));
       }
     }
-
-    // if (this.state.sign === " = " || this.state.input === String(eval(this.state.equation.slice(0,this.state.equation.length - 3)))) {
-    //   this.setState((state) => ({
-    //     input: "0.",
-    //     decimal: false,
-    //     // equation: "",
-    //     operator: false,
-    //     sign: "",
-    //     result: true
-    //   }));
-    // } else if (
-    //   this.state.decimal &&
-    //   !this.state.input.includes(".")) {
-    //   this.setState((state) => ({
-    //     input: state.input + ".",
-    //     decimal: false
-    //   }));
-    // }
   }
 
   handleNegate() {
     if (eval(this.state.input) !== 0) {
-      if (
-        this.state.sign === " = " ||
-        this.state.input === this.state.equation
-      ) {
+      if (this.state.sign === "=" || this.state.input === this.state.equation) {
         this.setState({
           input: String(-1 * Number(this.state.input)),
           equation: "",
           sign: "",
-          // decimal :false,
           result: true,
-          operator: false
+          operator: false,
         });
-      } else if (this.state.sign !== " = ") {
+      } else if (this.state.sign !== "=") {
         this.setState({
-          input: String(-1 * Number(this.state.input))
+          input: String(-1 * Number(this.state.input)),
         });
       }
     }
@@ -192,23 +305,23 @@ class Calculator extends React.Component {
       decimal: true,
       operator: false,
       sign: "",
-      result: true
+      result: true,
     });
   }
 
   ommitLastDigit() {
     if (
-      this.state.sign !== " = " &&
+      this.state.sign !== "=" &&
       this.state.input !== this.state.equation &&
       this.state.input !==
         String(
-          eval(this.state.equation.slice(0, this.state.equation.length - 3))
+          eval(this.state.equation.slice(0, this.state.equation.length - 1))
         )
     ) {
       const newInput = this.state.input.slice(0, this.state.input.length - 1);
       this.setState({
         input: newInput === "" ? "0" : newInput,
-        decimal: !newInput.includes(".")
+        decimal: !newInput.includes("."),
       });
     }
   }
@@ -239,7 +352,7 @@ class Calculator extends React.Component {
           <button
             className="buttons op"
             id="divide"
-            value=" / "
+            value="/"
             onClick={this.handleOperation}
           >
             /
@@ -271,7 +384,7 @@ class Calculator extends React.Component {
           <button
             className="buttons op"
             id="multiply"
-            value=" * "
+            value="*"
             onClick={this.handleOperation}
           >
             x
@@ -303,7 +416,7 @@ class Calculator extends React.Component {
           <button
             className="buttons op"
             id="subtract"
-            value=" - "
+            value="-"
             onClick={this.handleOperation}
           >
             -
@@ -335,7 +448,7 @@ class Calculator extends React.Component {
           <button
             className="buttons op"
             id="add"
-            value=" + "
+            value="+"
             onClick={this.handleOperation}
           >
             +
@@ -366,7 +479,7 @@ class Calculator extends React.Component {
           <button
             className="buttons result"
             id="equals"
-            value=" = "
+            value="="
             onClick={this.handleOperation}
           >
             =
@@ -381,7 +494,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     NewLog: (equation) => {
       dispatch(AddLogs(equation));
-    }
+    },
   };
 };
 
