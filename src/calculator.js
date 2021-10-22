@@ -96,7 +96,7 @@ class Calculator extends React.Component {
           this.state.sign.length < 2 &&
           this.state.sign !== "="
         ) {
-          const newSign = this.state.sign + "-";
+          const newSign = this.state.sign + " " + "-";
           const newExp = this.state.equation + " " + "-";
           this.setState((state) => ({
             equation: newExp,
@@ -194,7 +194,6 @@ class Calculator extends React.Component {
   handleOperation(e) {
     if (!this.state.operator && this.state.result) {
       const exp = this.state.equation + this.state.input + e.target.value;
-      console.log(exp.slice(0, exp.length - 1));
 
       if (e.target.value === "=") {
         this.props.NewLog([exp, String(eval(exp.slice(0, exp.length - 1)))]);
@@ -222,7 +221,7 @@ class Calculator extends React.Component {
         this.state.sign.length < 2 &&
         this.state.sign !== "="
       ) {
-        const newSign = this.state.sign + "-";
+        const newSign = this.state.sign + " " + "-";
         const newExp = this.state.equation + " " + "-";
         this.setState((state) => ({
           equation: newExp,
